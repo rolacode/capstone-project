@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Booking(models.Model):
@@ -9,11 +10,20 @@ class Booking(models.Model):
     def __str__(self):
         return self.name
     
-    
-class Menu(models.Model):
-    title = models.CharField(max_length=255)
-    price = models.FloatField(null=False)
-    inventory = models.IntegerField(default=5)    
-    
+class Category(models.Model):
+    slug = models.SlugField()
+    title = models.CharField(max_length=255, db_index=True)
+
     def __str__(self):
         return self.title
+    
+
+class MenuItem(models.Model):
+    title = models.CharField(max_length=255, db_index=True)
+    price = models.DecimalField(max_digits=6, db_index=True, decimal_places=2)
+    featured = models.BooleanField(db_index=True, default=False)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    inventory = models.SmallIntegerField(default=1)
+
+    def __str__(self):
+        return self.title    
