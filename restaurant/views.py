@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import Booking, MenuItem, User, Category
@@ -31,6 +32,12 @@ class CategoriesView(generics.ListCreateAPIView):
         elif self.request.method == "POST":
             return [IsAdminUser()]
         return [permission() for permission in self.permission_classes]
+    
+class BookingViewSet(viewsets.ModelViewSet):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+    permission_classes = [IsAuthenticated]    
+    
 
 class BookingView(generics.ListCreateAPIView):
     queryset = Booking.objects.all()
@@ -55,7 +62,18 @@ class MenuItemsView(generics.ListCreateAPIView):
             return []
         elif self.request.method == "POST":
             return [IsAdminUser()]
-        return [permission() for permission in self.permission_classes]    
+        return [permission() for permission in self.permission_classes] 
+    
+class MenuItemView(generics.RetrieveUpdateAPIView):
+    queryset = MenuItem.objects.all()
+    serializer_class = MenuItemSerializer
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return []
+        elif self.request.method == "PUT" or self.request.method == "PATCH":
+            return [(IsAdminUser())]
+        return [permission() for permission in self.permission_classes]   
         
         
 class SingleMenuItemView(generics.RetrieveUpdateAPIView, generics.DestroyAPIView):
@@ -67,4 +85,10 @@ class SingleMenuItemView(generics.RetrieveUpdateAPIView, generics.DestroyAPIView
             return []
         elif self.request.method == "PUT" or self.request.method == "PATCH":
             return [(IsAuthenticated() or IsAdminUser())]
-        return [permission() for permission in self.permission_classes]        
+        return [permission() for permission in self.permission_classes]    
+    
+@api_view()
+@permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+def msg(request):
+    return Response({'message': 'This view is Protected'})                
